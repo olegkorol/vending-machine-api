@@ -1,0 +1,131 @@
+import { Router, Request, Response } from 'express';
+import { User } from '../interfaces/User';
+import { withAuth } from '../middleware/with-auth';
+import prisma from '../prisma-client';
+
+const router: Router = Router();
+
+// Create a new user
+router.post('/', async (req: Request, res: Response) => {
+  const { username, password, role } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send('username and password are required');
+  }
+
+  const data: User = {
+    username,
+    password, // this should be hashed in a real-world app
+  }
+
+  if (role) {
+    data.role = role;
+  }
+
+  try {
+    const user = await prisma().user.findUnique({
+      where: {
+        username,
+      },
+    });
+
+    if (user) {
+      return res.status(400).send('username already exists');
+    }
+
+    const newUser = await prisma().user.create({
+      data,
+    });
+
+    return res.status(201).json(newUser);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Get a single user by username
+router.get('/:username', withAuth, async (req: Request | any, res: Response) => {
+  const { username } = req.params;
+  const { user: { username: jwtUsername }} = req.jwt;
+
+  if (username !== jwtUsername) {
+    return res.status(403).send('You are not authorized to access this resource');
+  }
+
+  try {
+    const user = await prisma().user.findUnique({
+      select: {
+        username: true,
+        role: true,
+        deposit: true,
+      },
+      where: {
+        username: username,
+      },
+    });
+
+    res.status(200).json(user);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update a user's password and/or role by username
+router.put('/:username', withAuth, async (req: Request | any, res: Response) => {
+  const { password, role } = req.body;
+  const { username } = req.params;
+  const { user: { username: jwtUsername } } = req.jwt;
+
+  if (username !== jwtUsername) {
+    return res.status(403).json('You are not authorized to access this resource');
+  }
+
+  if (!password && !role) {
+    return res.status(400).json('Either a new password or role is required');
+  }
+  if (role && !['buyer', 'seller'].includes(role)) {
+    return res.status(400).json('Role must be either "buyer" or "seller"');
+  }
+
+  // create an object with the new password and/or role
+  const data: any = {};
+  if (password) data.password = password;
+  if (role) data.role = role;
+  
+  try {
+    const user = await prisma().user.update({
+      where: {
+        username: username,
+      },
+      data,
+    });
+  
+    res.status(200).json({ user, message: 'User updated successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a user by username
+router.delete('/:username', withAuth, async (req: Request | any, res: Response) => {
+  const { username } = req.params;
+  const { user: { username: jwtUsername } } = req.jwt
+
+  if (username !== jwtUsername) {
+    return res.status(403).json('You are not authorized to access this resource');
+  }
+
+  try {
+    await prisma().user.delete({
+      where: {
+        username: username,
+      },
+    });
+
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.meta?.cause || err.message });
+  }
+});
+
+export default router;
