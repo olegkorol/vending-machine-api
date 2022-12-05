@@ -4,9 +4,9 @@ import { tryCatch } from '../utils';
 const prisma = prismaClient();
 
 const logger =  {
-  info: (info: any) => console.error('[user controller]', info),
-  log: (log: any) => console.error('[user controller]', log),
-  error: (err: any) => console.error('[user controller]', err),
+  info: (info: any) => console.error('[product controller]', info),
+  log: (log: any) => console.error('[product controller]', log),
+  error: (err: any) => console.error('[product controller]', err),
 };
 
 export default {
