@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import prisma from '../prisma-client';
 import { createToken } from '../utils';
+import userController from '../controllers/user';
 
 const router = Router();
 
@@ -9,11 +9,7 @@ router.post('/login', async function (req: Request, res: Response) {
   const { username, password } = req.body;
 
   // Check if the username and password are the same as in DB.
-  const user = await prisma().user.findUnique({
-    where: {
-      username,
-    },
-  });
+  const user = await userController.read.userByUsername(username, true);
 
   // Check if the username and password are valid.
   if (username === user?.username && password === user?.password) {

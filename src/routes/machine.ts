@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { User } from '../interfaces/User';
-import prisma from '../prisma-client';
+import { User, Product } from '../interfaces';
+import userController from '../controllers/user';
+import productController from '../controllers/product';
 
 const router = Router();
 
@@ -13,11 +14,7 @@ router.post('/deposit', async (req: Request | any, res: Response) => {
     return res.status(400).json('please provide a coin');
   }
 
-  const user = await prisma().user.findUnique({
-    where: {
-      username,
-    },
-  }) as User;
+  const user: User = await userController.read.userByUsername(username);
 
   const { role } = user;
 
@@ -32,19 +29,7 @@ router.post('/deposit', async (req: Request | any, res: Response) => {
 
   const deposit = user.deposit + coin;
   
-  const update = await prisma().user.update({
-    select: {
-      username: true,
-      deposit: true,
-      role: true,
-    },
-    where: {
-      username,
-    },
-    data: {
-      deposit,
-    },
-  });
+  const update = await userController.update.userByUsername(username, { deposit });
 
   res.status(200).json({ message: 'Coin deposited!', user: update });
 });
@@ -61,17 +46,8 @@ router.post('/buy/:productId', async (req: Request | any, res: Response) => {
   }
 
   try {
-    const user = await prisma().user.findUniqueOrThrow({
-      where: {
-        username,
-      },
-    });
-  
-    const product = await prisma().product.findUniqueOrThrow({
-      where: {
-        id: Number(productId),
-      },
-    });
+    const user = await userController.read.userByUsername(username);
+    const product = await productController.read.productById(Number(productId));
 
     // Check if there is enough stock for the order
     if (product.amountAvailable < amount) {
@@ -107,24 +83,13 @@ router.post('/buy/:productId', async (req: Request | any, res: Response) => {
     // Update the user's vending machine account balance and save it to the database
     const newDeposit = user.deposit - totalPrice;
   
-    const updatedUser = await prisma().user.update({
-      where: {
-        username,
-      },
-      data: {
-        deposit: newDeposit,
-      },
-    });
+    const updatedUser: User = await userController.update.userByUsername(username, { deposit: newDeposit });
 
     // Update product's stock
-    const updatedProduct = await prisma().product.update({
-      where: {
-        id: Number(product.id),
-      },
-      data: {
-        amountAvailable: Number(product.amountAvailable - amount),
-      }
-    });
+    const updatedProduct: Product = await productController.update.productById(
+      Number(productId), 
+      { amountAvailable: product.amountAvailable - amount }
+    );
   
     res.status(200).json({
       message: 'Purchase successful!',
@@ -143,11 +108,7 @@ router.post('/reset', async (req: Request | any, res: Response) => {
 
   try {
     // get user's current balance (deposit)
-    const user = await prisma().user.findUniqueOrThrow({
-      where: {
-        username,
-      },
-    }) as User;
+    const user: User = await userController.read.userByUsername(username);
   
     const { deposit } = user;
   
@@ -155,14 +116,7 @@ router.post('/reset', async (req: Request | any, res: Response) => {
       return res.status(200).send('Your account balance is already 0');
     }
   
-    const update = await prisma().user.update({
-      where: {
-        username,
-      },
-      data: {
-        deposit: 0,
-      },
-    });
+    const update: User = await userController.update.userByUsername(username, { deposit: 0 });
   
     res.status(200).json({update, returnChange: deposit});
   } catch (err: any) {

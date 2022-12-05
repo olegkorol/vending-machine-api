@@ -19,20 +19,22 @@ Design an API for a vending machine, allowing users with a “seller” role to 
 ## Evaluation criteria
 
 - Language/Framework of choice best practices
-- Edge cases covered
-- Write tests for /deposit, /buy and one CRUD endpoint of your choice
+- [ ] Edge cases covered
+- [x] (Postman) Write tests for /deposit, /buy and one CRUD endpoint of your choice
 - Code readability and optimization
 
 ## Bonus
 
-- If somebody is already logged in with the same credentials, the user should be given a message "There is already an active session using your account". In this case the user should be able to terminate all the active sessions on their account via an endpoint i.e. /logout/all
+- [ ] If somebody is already logged in with the same credentials, the user should be given a message "There is already an active session using your account". In this case the user should be able to terminate all the active sessions on their account via an endpoint i.e. /logout/all
 - Attention to security
 
 ## Deliverables
 
 A Github repository with public access. Please have the solution running and a Postman / Swagger collection ready on your computer so the domain expert can tell you which tests to run on the API.
 
-## Constraints
+## Notes
+
+### Considerations
 
 - Change coins in the machine are infinite
 - There is only one vending machine

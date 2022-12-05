@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { User } from '../interfaces/User';
+import { User } from '../interfaces';
 import { withAuth } from '../middleware/with-auth';
-import prisma from '../prisma-client';
+import userController from '../controllers/user';
 
 const router: Router = Router();
 
@@ -17,25 +17,18 @@ router.post('/', async (req: Request, res: Response) => {
     username,
     password, // this should be hashed in a real-world app
   }
-
   if (role) {
     data.role = role;
   }
 
   try {
-    const user = await prisma().user.findUnique({
-      where: {
-        username,
-      },
-    });
+    const user = await userController.read.userByUsername(username);
 
     if (user) {
       return res.status(400).send('username already exists');
     }
 
-    const newUser = await prisma().user.create({
-      data,
-    });
+    const newUser = await userController.create.user(data);
 
     return res.status(201).json(newUser);
   } catch (err: any) {
@@ -53,16 +46,7 @@ router.get('/:username', withAuth, async (req: Request | any, res: Response) => 
   }
 
   try {
-    const user = await prisma().user.findUnique({
-      select: {
-        username: true,
-        role: true,
-        deposit: true,
-      },
-      where: {
-        username: username,
-      },
-    });
+    const user = await userController.read.userByUsername(username);
 
     res.status(200).json(user);
   } catch (err: any) {
@@ -93,12 +77,7 @@ router.put('/:username', withAuth, async (req: Request | any, res: Response) => 
   if (role) data.role = role;
   
   try {
-    const user = await prisma().user.update({
-      where: {
-        username: username,
-      },
-      data,
-    });
+    const user = await userController.update.userByUsername(username, data);
   
     res.status(200).json({ user, message: 'User updated successfully' });
   } catch (err: any) {
@@ -116,11 +95,7 @@ router.delete('/:username', withAuth, async (req: Request | any, res: Response) 
   }
 
   try {
-    await prisma().user.delete({
-      where: {
-        username: username,
-      },
-    });
+    await userController.delete.userByUsername(username);
 
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (err: any) {
