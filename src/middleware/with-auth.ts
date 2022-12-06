@@ -1,17 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-import prisma from '../prisma-client';
-
 import config from '../config';
 const { jwtSecret } = config;
 
 export function withAuth(req: Request | any, res: Response, next: NextFunction) {
   // Get the authorization header from the request.
   const authorizationHeader = req.headers.authorization;
+  const { user } = req.session;
 
   if (!authorizationHeader) {
     // If the authorization header is not present, return a 401 Unauthorized response.
+    return res.status(401).send({ error: "Unauthorized" });
+  }
+  if (!user) {
     return res.status(401).send({ error: "Unauthorized" });
   }
 

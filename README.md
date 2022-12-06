@@ -25,7 +25,7 @@ Design an API for a vending machine, allowing users with a “seller” role to 
 
 ## Bonus
 
-- [ ] If somebody is already logged in with the same credentials, the user should be given a message "There is already an active session using your account". In this case the user should be able to terminate all the active sessions on their account via an endpoint i.e. /logout/all
+- [x] If somebody is already logged in with the same credentials, the user should be given a message "There is already an active session using your account". In this case the user should be able to terminate all the active sessions on their account via an endpoint i.e. /logout/all
 - Attention to security
 
 ## Deliverables

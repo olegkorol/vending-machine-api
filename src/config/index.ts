@@ -6,8 +6,10 @@ dotenv.config();
 
 export default {
   port: process.env.PORT || 3000,
-  jwtSecret: process.env.JWT_SECRET,
+  jwtSecret: process.env.JWT_SECRET || 'secret',
+  sessionSecret: process.env.SESSION_SECRET || 'secret',
 } as {
   port: number;
   jwtSecret: Secret;
+  sessionSecret: string;
 }

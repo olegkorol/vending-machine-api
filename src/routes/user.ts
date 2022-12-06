@@ -41,6 +41,8 @@ router.get('/:username', withAuth, async (req: Request | any, res: Response) => 
   const { username } = req.params;
   const { user: { username: jwtUsername }} = req.jwt;
 
+  console.log({ session: req.session, jwt: req.jwt})
+
   if (username !== jwtUsername) {
     return res.status(403).send('You are not authorized to access this resource');
   }
