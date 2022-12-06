@@ -3,7 +3,7 @@ import {
   createToken, 
   addSessionToActiveSessions, 
   checkForOtherActiveSessions, 
-  getEverything, 
+  // getEverything, 
   removeSessionAndToken, 
   removeAllActiveSessionsAndTokens 
 } from '../utils/auth';
